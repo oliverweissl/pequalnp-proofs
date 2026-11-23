@@ -7,7 +7,7 @@
 #   tools/pnp.sh beat <step>           keep the lease alive (every 30 minutes while you work)
 #   tools/pnp.sh check <step>          build your file
 #   tools/pnp.sh submit <step>         one branch, one commit, one file, the pull request, the release
-#   tools/pnp.sh release <step> <reason> [<sha256 of a search program>]
+#   tools/pnp.sh release <step> <reason> [<sha256 of a search program or of a re-checked file>]
 #                                      give a step back: hypothesis_too_weak | missing_lemma |
 #                                      statement_seems_false | does_not_elaborate | exhausted |
 #                                      out_of_time | other
@@ -87,7 +87,8 @@ submit)
   curl -fsS -X POST "$DESK/release?lease=$(field "$id" lease.id)&reason=submitted" >/dev/null && echo "submitted; the verdict comes as a comment on the pull request. Next: git checkout main && tools/pnp.sh next"
   ;;
 release)
-  have "$2"; q="lease=$(field "$2" lease.id)&reason=${3:?a reason}"; [ -n "${4:-}" ] && q="$q&program=$4"
+  have "$2"; q="lease=$(field "$2" lease.id)&reason=${3:?a reason}"; 
+  [ -n "${4:-}" ] && q="$q&program=$4"   # with exhausted or rechecked: a sha256
   curl -sS -X POST "$DESK/release?$q"
   ;;
 *)
